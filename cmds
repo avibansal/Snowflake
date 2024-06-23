@@ -1,1 +1,39 @@
+CREATE OR REPLACE TABLE customer ( custid STRING, fname STRING,lname STRING,age INTEGER,Prof STRING );
 
+COPY INTO customer FROM @NEW_STAGE/Customer.csv FILE_FORMAT = (type = 'CSV', field_delimiter = ',', skip_header = 1);
+select * from customer;
+
+CREATE OR REPLACE TABLE sales ( custid VARCHAR, prodname STRING,noofitem INT,cost INTEGER ); 
+COPY INTO sales FROM @NEW_STAGE/Sales.csv FILE_FORMAT = (type = 'CSV', field_delimiter = ',', skip_header = 1);
+select * from sales;
+show tables;
+desc table sales;
+
+select * from customer left join sales on customer.custid = sales.custid;
+
+select * from customer right join sales on customer.custid = sales.custid;
+
+select count(distinct custid) from customer;
+
+select avg(age) from customer;
+
+select sum(noofitem*cost) from sales;
+
+select PRODNAME,sum(noofitem*cost) AS Total from sales group by PRODNAME order by sum(noofitem*cost) DESC limit 3;
+
+select * from customer where age <35;
+
+select prof,count(prof) from customer group by prof order by count(custid);
+
+
+create view cust_ag35 as select * from customer where age <35;
+select*from cust_ag35;
+
+select * from sales;
+update sales set cost=0 where custid=101;
+
+-- Snowflake's Time Travel Feature (10 min before in time)
+select*from sales at(offset => -60*10);
+
+create table p1 clone sales;
+select * from p1;
